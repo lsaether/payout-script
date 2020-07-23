@@ -8,18 +8,13 @@ import { SubmittableExtrinsic } from "@polkadot/api/types";
  * @param payloadObj 
  * @param wsEndpoint 
  */
-const broadcast = async (payloadObj: any, wsEndpoint: string) => {
-  const api = await ApiPromise.create({
-    provider: new WsProvider(wsEndpoint),
-  });
-
+const broadcast = async (payloadObj: any) => {
   if (!payloadObj) {
     // TODO: Read it from file.
   }
   const captureLoop = async (): Promise<string> => {
     await askQuestion("Hold up the QR code of the signed transaction from the Signer app in front of your webcam and press 'Enter' when you're ready to take a picture.");
     const result = await captureWebcam("broadcast");
-    // console.log(result);
     return result;
   }
 
@@ -35,9 +30,10 @@ const broadcast = async (payloadObj: any, wsEndpoint: string) => {
 
   const { address, call, payload } = payloadObj;
   const extrinsic: SubmittableExtrinsic<'promise'> = call;
-  extrinsic.addSignature(address, '0x' + result, payload);
-  console.log("Signed transaction:", extrinsic.toJSON());
-  // extrinsic.send();
+  extrinsic.addSignature(address, '0x' + result, payload.toPayload());
+  console.log("Signed transaction:", extrinsic.toJSON() + "\n");
+  const hash = await extrinsic.send();
+  console.log("Hash:", hash.toString());
 }
 
 export default broadcast;
